@@ -79,24 +79,20 @@ jobs:
 
       - uses: pnpm/action-setup@v4
         with:
+          version: 10.4.1
           run_install: false
 
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-          cache: pnpm
+          # Intentionally no cache: setup-node's post-job save fails when the
+          # pnpm store path was never created (first run / early job failure).
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
           components: rustfmt, clippy
-
-      - name: Cache Rust build
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: src-tauri -> target
-          key: ${{ matrix.target }}
 
       - name: Install frontend dependencies
         run: pnpm install --frozen-lockfile
