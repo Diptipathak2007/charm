@@ -7,10 +7,11 @@ use windows::Win32::{
     Foundation::HWND,
     System::Threading::GetCurrentProcessId,
     UI::{
-        Accessibility::{
-            SetWinEventHook, EVENT_SYSTEM_FOREGROUND, HWINEVENTHOOK, WINEVENT_OUTOFCONTEXT,
+        Accessibility::{SetWinEventHook, HWINEVENTHOOK},
+        WindowsAndMessaging::{
+            GetClassNameW, GetForegroundWindow, GetWindowThreadProcessId, EVENT_SYSTEM_FOREGROUND,
+            WINEVENT_OUTOFCONTEXT,
         },
-        WindowsAndMessaging::{GetClassNameW, GetForegroundWindow, GetWindowThreadProcessId},
     },
 };
 
