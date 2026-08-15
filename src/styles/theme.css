@@ -1,0 +1,72 @@
+/* LuckyDrop design tokens.
+   An ink-on-paper palette: warm paper surfaces, deep indigo ink, brass for
+   selection and a vermilion "red thread" accent for anything actionable. */
+
+:root {
+  --paper: #f6f4ed;
+  --paper-tint: #efece2;
+  --surface: #fffefa;
+  --surface-soft: rgb(255 255 255 / 62%);
+  --surface-veil: rgb(255 255 255 / 34%);
+  --line: #e2ddd0;
+  --line-strong: #d3ccbb;
+
+  --ink: #1e2434;
+  --ink-soft: #4b5468;
+  --ink-muted: #78808f;
+  --ink-faint: #98a0ac;
+
+  --accent: #b03f2d;
+  --accent-ink: #fdfaf6;
+  --accent-tint: rgb(176 63 45 / 9%);
+  --brass: #a9822f;
+  --brass-tint: rgb(169 130 47 / 12%);
+  --positive: #3f7a5f;
+  --negative: #a2433c;
+
+  --shadow-card: 0 1px 2px rgb(30 36 52 / 5%), 0 12px 28px rgb(30 36 52 / 7%);
+  --shadow-lift: 0 2px 4px rgb(30 36 52 / 6%), 0 20px 40px rgb(30 36 52 / 11%);
+  --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 65%);
+
+  --radius-sm: 9px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+  --radius-xl: 26px;
+
+  --display:
+    "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia,
+    serif;
+  --sans: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  --ease-out: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-swing: cubic-bezier(0.32, 0.72, 0.28, 1);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #14161f;
+    --paper-tint: #191c26;
+    --surface: #1d212c;
+    --surface-soft: rgb(255 255 255 / 5%);
+    --surface-veil: rgb(255 255 255 / 3%);
+    --line: #2b3040;
+    --line-strong: #39404f;
+
+    --ink: #ecebe3;
+    --ink-soft: #b9bec9;
+    --ink-muted: #949ba8;
+    --ink-faint: #767d8a;
+
+    --accent: #de7059;
+    --accent-ink: #1a1d26;
+    --accent-tint: rgb(222 112 89 / 14%);
+    --brass: #cfa54c;
+    --brass-tint: rgb(207 165 76 / 16%);
+    --positive: #7ab294;
+    --negative: #dd8079;
+
+    --shadow-card: 0 1px 2px rgb(0 0 0 / 30%), 0 14px 30px rgb(0 0 0 / 28%);
+    --shadow-lift: 0 2px 6px rgb(0 0 0 / 34%), 0 22px 44px rgb(0 0 0 / 36%);
+    --shadow-inset: inset 0 1px 0 rgb(255 255 255 / 6%);
+  }
+}

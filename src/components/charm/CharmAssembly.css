@@ -1,0 +1,64 @@
+/* The thread and the charm sway together: the rotation is applied to the whole
+   assembly around its anchor point, never to the charm on its own. */
+.charm-assembly {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 150px;
+  transform: scale(var(--user-scale));
+  transform-origin: top center;
+  transition: transform 220ms var(--ease-out, cubic-bezier(0.2, 0.8, 0.2, 1));
+  animation: assembly-idle var(--idle-duration) ease-in-out infinite alternate;
+}
+
+.charm-assembly__artwork {
+  width: 100px;
+  height: 116px;
+  margin-top: -3px;
+  transform: scale(var(--art-scale));
+  transform-origin: top center;
+  filter: drop-shadow(0 7px 7px rgb(24 30 44 / 20%));
+}
+
+.charm-assembly__artwork svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.charm-assembly--compact {
+  width: 112px;
+}
+
+.charm-assembly--compact .thread {
+  height: 76px;
+  flex-basis: 76px;
+}
+
+.charm-assembly--compact .thread--none {
+  height: 18px;
+  flex-basis: 18px;
+}
+
+.charm-assembly--compact .charm-assembly__artwork {
+  width: 82px;
+  height: 96px;
+}
+
+@keyframes assembly-idle {
+  from {
+    rotate: var(--idle-rotation-negative);
+  }
+  to {
+    rotate: var(--idle-rotation);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .charm-assembly {
+    animation: none;
+    rotate: 0deg;
+    transition-duration: 0.01ms;
+  }
+}

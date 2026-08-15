@@ -1,0 +1,58 @@
+:root {
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+/* The window itself is transparent: every layer between it and the charm must
+   stay transparent, or the desktop stops showing through. */
+html,
+body,
+#root {
+  min-width: 0;
+  min-height: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+[data-view="charm"],
+[data-view="charm"] body,
+[data-view="charm"] #root {
+  overflow: hidden;
+  background: transparent;
+  cursor: default;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+[data-view="customizer"] {
+  color-scheme: light dark;
+}
+
+[data-view="customizer"],
+[data-view="customizer"] body {
+  background: var(--paper);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

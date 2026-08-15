@@ -1,0 +1,82 @@
+.thread {
+  display: block;
+  width: 64px;
+  height: 105px;
+  flex: 0 0 105px;
+  overflow: visible;
+}
+
+.thread path,
+.thread ellipse,
+.thread circle {
+  vector-effect: non-scaling-stroke;
+}
+
+.thread--none {
+  height: 28px;
+  flex-basis: 28px;
+}
+
+.thread__classic-shadow,
+.thread__classic-fibre,
+.thread__red-dark,
+.thread__red-light,
+.thread__beaded-cord,
+.thread__minimal {
+  fill: none;
+  stroke-linecap: round;
+}
+
+.thread__classic-shadow {
+  stroke: rgb(255 255 255 / 34%);
+  stroke-width: 3.4;
+}
+
+.thread__classic-fibre {
+  stroke: #655e59;
+  stroke-width: 1.7;
+  stroke-dasharray: 1.5 2;
+}
+
+.thread__red-dark {
+  stroke: #8c2833;
+  stroke-width: 2.2;
+}
+
+.thread__red-light {
+  stroke: #cf4b51;
+  stroke-width: 1.8;
+}
+
+.thread__gold-links {
+  fill: none;
+  stroke: #c6923d;
+  stroke-width: 1.45;
+}
+
+.thread__beaded-cord {
+  stroke: #6c7778;
+  stroke-width: 1;
+}
+
+.thread__beads circle {
+  stroke: rgb(255 255 255 / 55%);
+  stroke-width: 0.7;
+}
+
+.thread__beads circle[data-tone="0"] {
+  fill: #55a4a4;
+}
+
+.thread__beads circle[data-tone="1"] {
+  fill: #d49a57;
+}
+
+.thread__beads circle[data-tone="2"] {
+  fill: #9c718e;
+}
+
+.thread__minimal {
+  stroke: rgb(69 78 82 / 52%);
+  stroke-width: 0.8;
+}

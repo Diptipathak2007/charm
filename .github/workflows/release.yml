@@ -1,0 +1,265 @@
+name: Release LuckyDrop
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  metadata:
+    name: Validate release metadata
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm check:version
+
+  build:
+    name: Build ${{ matrix.name }}
+    needs: metadata
+    runs-on: ${{ matrix.runner }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: macOS Apple Silicon
+            platform: macos
+            runner: macos-15
+            target: aarch64-apple-darwin
+            bundles: dmg
+            asset_arch: aarch64
+          - name: macOS Intel
+            platform: macos
+            runner: macos-15-intel
+            target: x86_64-apple-darwin
+            bundles: dmg
+            asset_arch: x86_64
+          - name: Windows x64
+            platform: windows
+            runner: windows-latest
+            target: x86_64-pc-windows-msvc
+            bundles: nsis
+            asset_arch: x64
+          - name: Linux x64
+            platform: linux
+            runner: ubuntu-22.04
+            target: x86_64-unknown-linux-gnu
+            bundles: appimage,deb
+            asset_arch: x86_64
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Install Linux system dependencies
+        if: matrix.platform == 'linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            curl \
+            file \
+            libayatana-appindicator3-dev \
+            librsvg2-dev \
+            libssl-dev \
+            libwebkit2gtk-4.1-dev \
+            libxdo-dev \
+            patchelf \
+            wget \
+            xdg-utils
+
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+          components: rustfmt, clippy
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+          key: ${{ matrix.target }}
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate frontend
+        run: |
+          pnpm typecheck
+          pnpm build
+
+      - name: Validate Rust
+        working-directory: src-tauri
+        run: |
+          cargo fmt --check
+          cargo check --all-targets
+          cargo test
+          cargo clippy --all-targets -- -D warnings
+
+      - name: Build production bundles
+        env:
+          NO_STRIP: ${{ matrix.platform == 'linux' && 'true' || '' }}
+        run: pnpm tauri build --target "${{ matrix.target }}" --bundles "${{ matrix.bundles }}"
+
+      - name: Stage macOS installer
+        if: matrix.platform == 'macos'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          files=(src-tauri/target/${{ matrix.target }}/release/bundle/dmg/*.dmg)
+          if [[ ${#files[@]} -ne 1 ]]; then
+            echo "Expected exactly one macOS DMG, found ${#files[@]}."
+            exit 1
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p release-assets
+          cp "${files[0]}" "release-assets/LuckyDrop_${version}_${{ matrix.asset_arch }}.dmg"
+
+      - name: Stage Windows installer
+        if: matrix.platform == 'windows'
+        shell: pwsh
+        run: |
+          $files = @(Get-ChildItem "src-tauri/target/${{ matrix.target }}/release/bundle/nsis" -Filter "*.exe")
+          if ($files.Count -ne 1) {
+            throw "Expected exactly one Windows NSIS installer, found $($files.Count)."
+          }
+          $version = $env:GITHUB_REF_NAME -replace '^v', ''
+          New-Item -ItemType Directory -Force "release-assets" | Out-Null
+          Copy-Item $files[0].FullName "release-assets/LuckyDrop_${version}_${{ matrix.asset_arch }}-setup.exe"
+
+      - name: Stage Linux installers
+        if: matrix.platform == 'linux'
+        shell: bash
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          appimages=(src-tauri/target/${{ matrix.target }}/release/bundle/appimage/*.AppImage)
+          debs=(src-tauri/target/${{ matrix.target }}/release/bundle/deb/*.deb)
+          if [[ ${#appimages[@]} -ne 1 || ${#debs[@]} -ne 1 ]]; then
+            echo "Expected one AppImage and one deb; found ${#appimages[@]} and ${#debs[@]}."
+            exit 1
+          fi
+          version="${GITHUB_REF_NAME#v}"
+          mkdir -p release-assets
+          cp "${appimages[0]}" "release-assets/LuckyDrop_${version}_${{ matrix.asset_arch }}.AppImage"
+          cp "${debs[0]}" "release-assets/LuckyDrop_${version}_${{ matrix.asset_arch }}.deb"
+
+      - name: Upload validated installers
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ matrix.platform }}-${{ matrix.asset_arch }}
+          path: release-assets/*
+          if-no-files-found: error
+          retention-days: 7
+
+  release:
+    name: Create draft GitHub Release
+    needs: build
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Download installers
+        uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release-assets
+          merge-multiple: true
+
+      - name: Validate complete release set
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="${GITHUB_REF_NAME#v}"
+          expected=(
+            "LuckyDrop_${version}_aarch64.dmg"
+            "LuckyDrop_${version}_x86_64.dmg"
+            "LuckyDrop_${version}_x64-setup.exe"
+            "LuckyDrop_${version}_x86_64.AppImage"
+            "LuckyDrop_${version}_x86_64.deb"
+          )
+          for asset in "${expected[@]}"; do
+            if [[ ! -s "release-assets/${asset}" ]]; then
+              echo "Missing or empty release asset: ${asset}"
+              exit 1
+            fi
+          done
+          assets=(release-assets/*)
+          if [[ ${#assets[@]} -ne ${#expected[@]} ]]; then
+            echo "Expected ${#expected[@]} release assets, found ${#assets[@]}."
+            exit 1
+          fi
+
+      - name: Create or update draft release
+        shell: bash
+        run: |
+          set -euo pipefail
+          tag="${GITHUB_REF_NAME}"
+          notes=$(cat <<'EOF'
+          ## What's included
+          - Twelve original lucky charms with individual rituals
+          - Spring physics, draggable placement, threads, sizing, and local customization
+          - Desktop-only presence, tray controls, and the global visibility shortcut
+          - Offline operation with no account, analytics, or telemetry
+
+          ## Supported platforms
+          - macOS: Apple Silicon and Intel
+          - Windows: x64
+          - Linux: x64 AppImage and Debian package
+
+          ## Installation
+          - **macOS:** open the DMG and drag LuckyDrop to Applications.
+          - **Windows:** run the `-setup.exe` installer.
+          - **Linux:** make the AppImage executable and run it, or install the `.deb`.
+
+          ## Known platform limitations
+          - These first-release builds are unsigned. macOS Gatekeeper and Windows SmartScreen may require explicit approval.
+          - macOS transparent-window support uses private APIs, so this direct-distribution build is not intended for the Mac App Store.
+          - Strict desktop-only presence on Linux requires X11. Wayland compositors do not expose the APIs LuckyDrop needs for this behavior.
+          EOF
+          )
+
+          prerelease=()
+          if [[ "${tag}" == *-* ]]; then
+            prerelease=(--prerelease)
+          fi
+
+          if gh release view "${tag}" >/dev/null 2>&1; then
+            gh release edit "${tag}" \
+              --title "LuckyDrop ${tag}"
+            gh release upload "${tag}" release-assets/* --clobber
+          else
+            gh release create "${tag}" release-assets/* \
+              --verify-tag \
+              --title "LuckyDrop ${tag}" \
+              --draft \
+              --generate-notes \
+              --notes "${notes}" \
+              "${prerelease[@]}"
+          fi

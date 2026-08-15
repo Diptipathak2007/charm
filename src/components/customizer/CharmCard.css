@@ -1,0 +1,430 @@
+.charm-card {
+  --charm-accent: #b03f2d;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  background: var(--surface-soft);
+  box-shadow: var(--shadow-inset);
+  transition:
+    border-color 200ms ease,
+    background 200ms ease,
+    box-shadow 240ms ease,
+    translate 240ms var(--ease-out);
+}
+
+.charm-card:hover {
+  translate: 0 -3px;
+  border-color: color-mix(in srgb, var(--charm-accent) 40%, var(--line));
+  background: var(--surface);
+  box-shadow: var(--shadow-card);
+}
+
+.charm-card--chosen {
+  border-color: color-mix(in srgb, var(--charm-accent) 55%, var(--line));
+  background: var(--surface);
+  box-shadow:
+    var(--shadow-card),
+    inset 0 0 0 1px color-mix(in srgb, var(--charm-accent) 18%, transparent);
+}
+
+.charm-card__select {
+  width: 100%;
+  padding: 0 18px 2px;
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  border: 0;
+  border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+  color: inherit;
+  background: transparent;
+  text-align: center;
+  cursor: pointer;
+}
+
+.charm-card__stage {
+  position: relative;
+  width: 100%;
+  height: 172px;
+  display: flex;
+  justify-content: center;
+}
+
+/* The rail the charm hangs from, echoing the top edge of the desktop. */
+.charm-card__rail {
+  position: absolute;
+  inset: 0 12px auto;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--line-strong) 22%,
+    var(--line-strong) 78%,
+    transparent
+  );
+}
+
+.charm-card__hanging {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: 50% 0;
+  transition: scale 240ms var(--ease-out);
+}
+
+.charm-card__hanging .thread {
+  width: 42px;
+  height: 74px;
+  flex-basis: 74px;
+}
+
+.charm-card__hanging .thread--none {
+  height: 22px;
+  flex-basis: 22px;
+}
+
+.charm-card__art {
+  width: 76px;
+  height: 92px;
+  margin-top: -2px;
+  transform-origin: 50% 0;
+  filter: drop-shadow(0 6px 6px rgb(24 30 44 / 15%));
+}
+
+.charm-card__art svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.charm-card:hover .charm-card__hanging {
+  scale: 1.04;
+  animation: hanging-hover-swing 1s var(--ease-swing) both;
+}
+
+.charm-card__name {
+  font-family: var(--display);
+  font-size: 1.06rem;
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.charm-card__region {
+  margin-top: 4px;
+  color: color-mix(in srgb, var(--charm-accent) 62%, var(--ink-muted));
+  font-size: 0.56rem;
+  font-weight: 700;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.charm-card__story {
+  min-height: 62px;
+  margin-top: 10px;
+  color: var(--ink-muted);
+  font-size: 0.68rem;
+  line-height: 1.55;
+  text-wrap: pretty;
+}
+
+.charm-card__actions {
+  padding: 12px 18px 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.charm-card__ritual {
+  padding: 7px 14px;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  font-size: 0.63rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  transition:
+    border-color 160ms ease,
+    color 160ms ease,
+    background 160ms ease,
+    scale 160ms var(--ease-out);
+}
+
+.charm-card__ritual:hover {
+  border-color: color-mix(in srgb, var(--charm-accent) 45%, var(--line-strong));
+  color: color-mix(in srgb, var(--charm-accent) 78%, var(--ink));
+  background: color-mix(in srgb, var(--charm-accent) 7%, var(--surface));
+  scale: 1.03;
+}
+
+.charm-card__badge {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  color: var(--accent-ink);
+  background: var(--charm-accent);
+  font-size: 0.53rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  opacity: 0;
+  scale: 0.7;
+  transition:
+    opacity 180ms ease,
+    scale 240ms var(--ease-out);
+}
+
+.charm-card--chosen .charm-card__badge {
+  opacity: 1;
+  scale: 1;
+}
+
+/* Rituals: the whole assembly swings from the rail. Anything applied to the
+   artwork alone must keep its top edge fixed to the end of the thread, so only
+   rotation about that point, depth rotation and filters are used here. */
+.charm-card__hanging[data-ritual="flick"] {
+  animation: hanging-flick 820ms var(--ease-swing);
+}
+
+.charm-card__hanging[data-ritual="pendulum"] {
+  animation: hanging-pendulum 1.15s var(--ease-swing);
+}
+
+.charm-card__hanging[data-ritual="sway"],
+.charm-card__hanging[data-ritual="freshen"] {
+  animation: hanging-sway 980ms ease-in-out;
+}
+
+.charm-card__hanging[data-ritual="beckon"] {
+  animation: hanging-beckon 900ms ease-in-out;
+}
+
+.charm-card__hanging[data-ritual="wobble"] {
+  animation: hanging-wobble 860ms ease-in-out;
+}
+
+.charm-card__hanging[data-ritual="nod"],
+.charm-card__hanging[data-ritual="glow"],
+.charm-card__hanging[data-ritual="sparkle"],
+.charm-card__hanging[data-ritual="flip"],
+.charm-card__hanging[data-ritual="wings"],
+.charm-card__hanging[data-ritual="flutter"] {
+  animation: hanging-settle 900ms var(--ease-swing);
+}
+
+.charm-card__hanging[data-ritual="nod"] .charm-card__art {
+  animation: art-nod 760ms ease-in-out;
+}
+
+.charm-card__hanging[data-ritual="glow"] .charm-card__art,
+.charm-card__hanging[data-ritual="sparkle"] .charm-card__art {
+  animation: art-glow 900ms ease-out;
+}
+
+.charm-card__hanging[data-ritual="flip"] .charm-card__art {
+  animation: art-flip 820ms var(--ease-out);
+}
+
+.charm-card__hanging[data-ritual="wings"] .charm-card__art,
+.charm-card__hanging[data-ritual="flutter"] .charm-card__art {
+  animation: art-wings 820ms ease-in-out;
+}
+
+@keyframes hanging-hover-swing {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  32% {
+    rotate: 2.4deg;
+  }
+  68% {
+    rotate: -1.5deg;
+  }
+}
+
+@keyframes hanging-flick {
+  0% {
+    rotate: 0deg;
+  }
+  18% {
+    rotate: 11deg;
+  }
+  42% {
+    rotate: -7.5deg;
+  }
+  64% {
+    rotate: 4deg;
+  }
+  82% {
+    rotate: -1.8deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes hanging-pendulum {
+  0% {
+    rotate: 0deg;
+  }
+  22% {
+    rotate: -13deg;
+  }
+  48% {
+    rotate: 9.5deg;
+  }
+  70% {
+    rotate: -5deg;
+  }
+  87% {
+    rotate: 2deg;
+  }
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes hanging-sway {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  28% {
+    rotate: -6deg;
+  }
+  62% {
+    rotate: 4.5deg;
+  }
+  84% {
+    rotate: -1.6deg;
+  }
+}
+
+@keyframes hanging-beckon {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  20% {
+    rotate: 7deg;
+  }
+  40% {
+    rotate: -6deg;
+  }
+  60% {
+    rotate: 5deg;
+  }
+  80% {
+    rotate: -2.5deg;
+  }
+}
+
+@keyframes hanging-wobble {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  16% {
+    rotate: -9deg;
+  }
+  36% {
+    rotate: 7.5deg;
+  }
+  56% {
+    rotate: -5deg;
+  }
+  76% {
+    rotate: 3deg;
+  }
+  90% {
+    rotate: -1.2deg;
+  }
+}
+
+@keyframes hanging-settle {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  30% {
+    rotate: 3.4deg;
+  }
+  66% {
+    rotate: -2.2deg;
+  }
+}
+
+@keyframes art-nod {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+  30% {
+    rotate: 8deg;
+  }
+  62% {
+    rotate: -5deg;
+  }
+}
+
+@keyframes art-glow {
+  0%,
+  100% {
+    filter: drop-shadow(0 6px 6px rgb(24 30 44 / 15%));
+  }
+  45% {
+    filter:
+      drop-shadow(0 6px 6px rgb(24 30 44 / 15%))
+      drop-shadow(0 0 12px color-mix(in srgb, var(--charm-accent) 70%, white));
+  }
+}
+
+@keyframes art-flip {
+  0%,
+  100% {
+    transform: rotateY(0);
+  }
+  50% {
+    transform: rotateY(180deg);
+  }
+}
+
+@keyframes art-wings {
+  0%,
+  100% {
+    transform: rotateY(0);
+  }
+  32% {
+    transform: rotateY(26deg);
+  }
+  66% {
+    transform: rotateY(-19deg);
+  }
+}
+
+@media (max-width: 680px) {
+  .charm-card__stage {
+    height: 156px;
+  }
+
+  .charm-card__story {
+    min-height: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .charm-card,
+  .charm-card *,
+  .charm-card *::before,
+  .charm-card *::after {
+    animation: none !important;
+    transition-duration: 0.01ms !important;
+  }
+}
