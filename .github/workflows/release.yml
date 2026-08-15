@@ -21,7 +21,9 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-      # No pnpm install/cache here: this job only runs the pure Node version check.
+          # setup-node v6 caches by default; this job never runs pnpm install,
+          # so the store path would not exist at post-job save time.
+          package-manager-cache: false
       - run: node scripts/check-version.mjs
 
   build:
@@ -85,8 +87,9 @@ jobs:
       - uses: actions/setup-node@v6
         with:
           node-version: 22
-          # Intentionally no cache: setup-node's post-job save fails when the
-          # pnpm store path was never created (first run / early job failure).
+          # Release builds start clean, and the post-job cache save errors out
+          # whenever a job fails before the pnpm store exists.
+          package-manager-cache: false
 
       - name: Install Rust
         uses: dtolnay/rust-toolchain@stable
